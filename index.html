@@ -241,6 +241,7 @@
                 <input type="text" id="message" placeholder="Enter your message...">
                 <button id="send">Send</button>
             </div>
+            <div class="chips"></div>
             <div class="container">
                 <!-- <div class="changerMessage">Enable switch to get NLP based generic response from ChatGPT</div>
                 <label class="switch"><input type="checkbox" class="BotChanger" />
@@ -294,7 +295,76 @@
                         return Promise.resolve(sanitizedResponseText.substring(4));
                     });
             }
-
+            function generateChips() {
+                let chips = "<div style='display:flax; row-gap:10px;col-gap:10px'>"
+                let data = {
+                    "responseId": "932051f2-c1cb-4cdb-bc09-012ccd76b28b-4c6e80df",
+                    "queryResult": {
+                        "queryText": "regular",
+                        "parameters": {
+                            "account_sub_category": "regular",
+                            "account_type": ""
+                        },
+                        "allRequiredParamsPresent": true,
+                        "fulfillmentText": "How would like to apply?",
+                        "fulfillmentMessages": [
+                            {
+                                "text": {
+                                    "text": ["How would like to apply?"]
+                                }
+                            },
+                            {
+                                "payload": {
+                                    "richContent": [
+                                        [
+                                            {
+                                                "options": [
+                                                    {
+                                                        "event": {
+                                                            "languageCode": "",
+                                                            "name": "",
+                                                            "parameters": {
+                                                            }
+                                                        },
+                                                        "icon": {
+                                                            "color": "#FF9800",
+                                                            "type": "chevron_right"
+                                                        },
+                                                        "text": "Online (available only in metro politian cities)",
+                                                        "type": "button"
+                                                    }, {
+                                                        "event": {
+                                                            "languageCode": "",
+                                                            "name": "",
+                                                            "parameters": {
+                                                            }
+                                                        },
+                                                        "icon": {
+                                                            "color": "#FF9800",
+                                                            "type": "chevron_right"
+                                                        },
+                                                        "text": "Offline",
+                                                        "type": "button"
+                                                    }],
+                                                "type": "chips"
+                                            }]]
+                                }
+                            }],
+                        "intent": {
+                            "name": "projects/bankliaison-gpdd/agent/intents/83535745-fd44-4135-a042-3f014dcf3b21",
+                            "displayName": "select_sub_category"
+                        },
+                        "intentDetectionConfidence": 0.8511072,
+                        "languageCode": "en"
+                    }
+                }
+                data.queryResult.fulfillmentMessages[1].payload.richContent[0][0].options.map(element => {
+                    chips += "<div style= ' padding: 10px; background-color: black; border-radius: 25px;color:white;margin-bottom:10px'>" + element.text + "</div>"
+                })
+                chips+="</div>"
+                $('.chips').html(chips)
+            }
+            generateChips();
             function generateResponse(message) {
                 // Usage example
                 fetch(DIALOG_FLOW_API, {
@@ -303,7 +373,7 @@
                 })
                     .then(sanitizeResponse) // Call the sanitizeResponse function before calling response.json()
                     .then(data => {
-                        
+
                         let endTime = new Date().getTime() / 1000;
                         let responseTime = endTime - (startTime.getTime() / 1000);
 
@@ -316,7 +386,7 @@
                         addMessage(jsonData.queryResult.fulfillmentText, 'bot');
                         avg_time_category.push(startTime.getMinutes() + ":" + startTime.getSeconds());
                         avg_time_data.push(seconds);
-                        avg_user_time.push(generateUniqueFloats(0,1,1));
+                        avg_user_time.push(generateUniqueFloats(0, 1, 1));
                         updateChartData(avg_time_category, avg_time_data, avg_user_time);
                         startTime = new Date();
                     })
