@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ChatGPT Bot</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <!-- <script src="script.js"></script> -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <style type="text/css">
+        html,
+        body {
+            font-family: arial;
+        }
+
+        .heading {
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        #chatbox {
+            border: 1px solid #e2e2e2;
+            padding: 10px;
+            border-radius: 10px;
+            height: calc(100vh - 200px);
+            overflow: scroll;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            column-gap: 10px;
+            row-gap: 10px;
+            width: 400px;
+            margin-top: 15px;
+        }
+
+        .chatbox {
+            border: 1px solid #e2e2e2;
+            padding: 10px;
+            border-radius: 10px;
+            height: calc(100vh - 160px);
+            overflow: scroll;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            column-gap: 10px;
+            row-gap: 10px;
+            width: 400px;
+            margin-top: 5px;
+        }
+
+        #send {
+            height: 36px;
+            width: 72px;
+            border: none;
+            background-color: #2378e8;
+            color: #FFFFFF;
+            border-radius: 5px;
+        }
+
+        #message {
+            height: 34px;
+            width: 332px;
+            padding-left: 10px;
+            border: none;
+            background: #e2e2e2;
+            border-radius: 5px;
+        }
+
+        .user {
+            background: #2378e8;
+            padding: 10px;
+            width: 70%;
+            border-bottom-right-radius: 0px !important;
+            border-radius: 10px;
+            color: #FFFFFF;
+            font-family: Arial;
+            margin-top: 10px;
+            float: right;
+            margin-left: 25.3%;
+        }
+
+        .bot {
+            background: #e6e6e6;
+            padding: 10px;
+            width: 70%;
+            border-bottom-left-radius: 0px !important;
+            border-radius: 10px;
+            color: #000000;
+            font-family: Arial;
+        }
+
+        small {
+            font-size: 10px;
+            color: #2378e8;
+        }
+
+        .botParent {
+            display: flex;
+            justify-content: first baseline;
+        }
+
+        .container {
+            padding-left: 20px;
+        }
+
+        .switch input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .switch {
+            display: inline-block;
+            font-size: 20px;
+            height: 1em;
+            width: 2em;
+            background: #BDB9A6;
+            border-radius: 1em;
+            margin-top: 5px;
+        }
+
+        .switch div {
+            height: 1em;
+            width: 1em;
+            border-radius: 1em;
+            background: #FFF;
+            box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
+            -webkit-transition: all 300ms;
+            -moz-transition: all 300ms;
+            transition: all 300ms;
+        }
+
+        .switch input:checked+div {
+            -webkit-transform: translate3d(100%, 0, 0);
+            -moz-transform: translate3d(100%, 0, 0);
+            transform: translate3d(100%, 0, 0);
+        }
+
+        .changerMessage {
+            font-size: 15px;
+            font-weight: normal;
+            padding-bottom: 10px;
+        }
+
+        .responseSelectorMsg {
+            color: green;
+            font-size: 14px;
+        }
+
+        .highcharts-figure,
+        .highcharts-data-table table {
+            min-width: 360px;
+            max-width: 100%;
+            margin: 1em auto;
+            display: flex;
+            justify-content: first baseline;
+            margin-right: 20px;
+        }
+
+        #container,
+        #account_type_intents,
+        #account_opening_mode,
+        #account_method {
+            width: 280px;
+            margin-top: 10px;
+            margin-left: 0;
+            height: 250px;
+            border: 1px solid silver;
+            padding-top: 20px;
+            border-radius: 10px;
+            margin-right: 20px;
+        }
+
+
+        #avg_time,
+        #sf_compare {
+            width: 582px;
+            margin-left: 0;
+            height: 350px;
+            border: 1px solid silver;
+            border-radius: 10px;
+            margin-right: 20px;
+        }
+
+        .highcharts-data-table table {
+            font-family: Verdana, sans-serif;
+            border-collapse: collapse;
+            border: 1px solid #ebebeb;
+            margin: 10px auto;
+            text-align: center;
+            width: 100%;
+        }
+
+        .highcharts-data-table caption {
+            padding: 1em 0;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .highcharts-data-table th {
+            font-weight: 600;
+            padding: 0.5em;
+        }
+
+        .highcharts-data-table td,
+        .highcharts-data-table th,
+        .highcharts-data-table caption {
+            padding: 0.5em;
+        }
+
+        .highcharts-data-table thead tr,
+        .highcharts-data-table tr:nth-child(even) {
+            background: #f8f8f8;
+        }
+
+        .highcharts-data-table tr:hover {
+            background: #f1f7ff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="botParent">
+        <!-- <div class="dialogFlowBot">
+      <h1 class="heading">Chatbot using DialogFlow</h1>
+      <small>Powered by DialogFlow</small>
+      <iframe allow="microphone;" width="350" class="chatbox"
+        src="https://console.dialogflow.com/api-client/demo/embedded/c5008b18-36be-47c0-9a8b-1840c8fa7a03">
+      </iframe>
+    </div> -->
+
+        <div style="display: flex; justify-content: space-between">
+            <div class="chatGPTBot">
+                <!-- <h1 class="heading">Custom Bot with GPT 3 Engine (Davinci Model)</h1>
+                <small>Powered by ChatGpt</small> -->
+                <div id="chatbox"></div>
+                <input type="text" id="message" placeholder="Enter your message...">
+                <button id="send">Send</button>
+            </div>
+            <div class="container">
+                <!-- <div class="changerMessage">Enable switch to get NLP based generic response from ChatGPT</div>
+                <label class="switch"><input type="checkbox" class="BotChanger" />
+                    <div></div>
+                </label>
+                <span class="responseSelectorMsg">Getting response from DialogFlow API</span> -->
+                <figure class="highcharts-figure">
+                    <div id="avg_time"></div>
+                    <div id="sf_compare"></div>
+                </figure>
+                <figure class="highcharts-figure">
+                    <div id="container"></div>
+                    <div id="account_type_intents"></div>
+                    <div id="account_opening_mode"></div>
+                    <div id="account_method"></div>
+                </figure>
+            </div>
+        </div>
+    </div>
+    <!-- <style>
+        df-messenger {
+            --df-messenger-bot-message: #FFFFFF;
+            --df-messenger-button-titlebar-color: #df9b56;
+            --df-messenger-chat-background-color: #ede6ff;
+            --df-messenger-font-color: black;
+            --df-messenger-send-icon: #878fac;
+            --df-messenger-user-message: #c0a9fd;
+            --df-messenger-button-titlebar-color: #6750a4;
+            --df-messenger-button-titlebar-font-size: 15px;
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+    <df-messenger intent="WELCOME" chat-title="BankLiaison Bot" agent-id="c5008b18-36be-47c0-9a8b-1840c8fa7a03"
+        language-code="en"></df-messenger> -->
+    <script>
+        $(function () {
+            let avg_time_category = [];
+            let avg_time_data = [];
+            let avg_user_time = [];
+            let startTime = new Date();
+            const DIALOG_FLOW_API = "https://dialogflow.cloud.google.com/v1/integrations/messenger/webhook/c5008b18-36be-47c0-9a8b-1840c8fa7a03/sessions/dfMessenger-94910654";
+
+            function sanitizeResponse(response) {
+                return response.text()
+                    .then(responseText => {
+                        // Convert the response text to a string
+                        let sanitizedResponseText = responseText.toString();
+
+                        // Return the sanitized response text
+                        return Promise.resolve(sanitizedResponseText.substring(4));
+                    });
+            }
+
+            function generateResponse(message) {
+                // Usage example
+                fetch(DIALOG_FLOW_API, {
+                    method: 'POST',
+                    body: JSON.stringify({ "queryInput": { "text": { "text": message, "languageCode": "en" } } }),
+                })
+                    .then(sanitizeResponse) // Call the sanitizeResponse function before calling response.json()
+                    .then(data => {
+                        
+                        let endTime = new Date().getTime() / 1000;
+                        let responseTime = endTime - (startTime.getTime() / 1000);
+
+                        const seconds = responseTime;
+                        // Parse the sanitized response as JSON
+                        const jsonData = JSON.parse(data);
+
+                        // Handle the sanitized JSON response
+                        console.log(seconds);
+                        addMessage(jsonData.queryResult.fulfillmentText, 'bot');
+                        avg_time_category.push(startTime.getMinutes() + ":" + startTime.getSeconds());
+                        avg_time_data.push(seconds);
+                        avg_user_time.push(generateUniqueFloats(0,1,1));
+                        updateChartData(avg_time_category, avg_time_data, avg_user_time);
+                        startTime = new Date();
+                    })
+                    .catch(error => {
+                        // Handle any errors
+                        console.error('Error:', error);
+                    });
+            }
+
+            function addMessage(text, sender) {
+                const chatbox = document.getElementById("chatbox");
+                const message = document.createElement("div");
+                message.className = "message";
+                message.classList.add(sender);
+                message.innerText = text;
+                chatbox.appendChild(message);
+            }
+
+            $('#send').on('click', function () {
+                console.log('send messaga');
+                const input = document.getElementById("message");
+                const message = input.value;
+                addMessage(message, "user");
+                input.value = "";
+                const response = generateResponse(message);
+                startTime = new Date();
+                // addMessage(response, "bot");
+            })
+
+            function generateUniqueFloats(min, max, count) {
+                let uniqueFloats = 0;
+                let randomFloat = Math.random() * (max - min) + min;
+                return Number(randomFloat.toFixed(2));
+            }
+
+            var avg_time_chart = Highcharts.chart('avg_time', {
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: 'Average response time'
+                },
+                xAxis: {
+                    categories: avg_time_category,
+                    accessibility: {
+                        description: 'Hour'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Seconds'
+                    },
+                    labels: {
+                        format: '{value}'
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Bot',
+                    data: avg_time_data
+                }, {
+                    name: 'User',
+                    data: avg_user_time
+                }]
+            });
+
+            function updateChartData(categories, bot_data, user_data) {
+                // Generate new data or fetch data from an API
+
+                // Update the chart series data
+                var chart = avg_time_chart;
+                if (chart) {
+                    console.log(chart)
+                    // chart.series[0].setData(newData);
+                    chart.xAxis[0].update({ categories: categories });
+                    chart.series[0].update({ data: bot_data })
+                    chart.series[1].update({ data: user_data })
+                }
+            }
+
+            // //get current time stamp
+            // setInterval(function () {
+            //     if (avg_time_category.length <= 60) {
+            //         avg_time_category.push(Date.now());
+            //         avg_time_data.push(generateUniqueFloats(0, 2, 1));
+            //     } else {
+            //         avg_time_category.shift();
+            //         avg_time_data.shift();
+            //         avg_time_category.push(Date.now());
+            //         avg_time_data.push(generateUniqueFloats(0, 2, 1));
+            //     }
+            //     // generate_avg_time_chart(avg_time_category, avg_time_data)
+            //     updateChartData(avg_time_category, avg_time_data)
+            // }, 3000);
+
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Number of requests handled by the API'
+                },
+                xAxis: {
+                    categories: [
+                        'ChatGPT',
+                        'DialogFlow'
+                    ],
+                    crosshair: true
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'APIs call'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        '<td style="padding:0"><b>{point.y:.1f} APIs call</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'ChatGPT',
+                    data: [49, 71]
+                }]
+            });
+
+            Highcharts.chart('account_opening_mode', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Most frequent intents used based on account type'
+                },
+                xAxis: {
+                    categories: [
+                        'Online',
+                        'Offline'
+                    ],
+                    crosshair: true
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Times'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        '<td style="padding:0"><b>{point.y:.1f} APIs call</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Opening Mode',
+                    data: [63, 20]
+                }]
+            });
+
+            Highcharts.chart('account_type_intents', {
+                chart: {
+                    type: 'bar'
+                },
+                title: {
+                    text: 'Most frequent intents used based on account type',
+                    align: 'left'
+                },
+                xAxis: {
+                    categories: ['Savings', 'Current'],
+                    title: {
+                        text: null
+                    },
+                    gridLineWidth: 1,
+                    lineWidth: 0
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: ' Times',
+                        align: 'high'
+                    },
+                    labels: {
+                        overflow: 'justify'
+                    },
+                    gridLineWidth: 0
+                },
+                tooltip: {
+                    valueSuffix: ' Times'
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: '50%',
+                        dataLabels: {
+                            enabled: true
+                        },
+                        groupPadding: 0.1
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Account Type',
+                    data: [23, 12]
+                }]
+            });
+
+            Highcharts.chart('account_method', {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Most used intents based on account type',
+                    align: 'left'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                        }
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Brands',
+                    colorByPoint: true,
+                    data: [{
+                        name: 'Women  Account',
+                        y: 37.9,
+                        sliced: false,
+                        selected: false
+                    }, {
+                        name: 'Regular',
+                        y: 43.3
+                    }, {
+                        name: 'Senior Citizen',
+                        y: 19.7
+                    }]
+                }]
+            });
+
+            Highcharts.chart('sf_compare', {
+                title: {
+                    text: 'Successful and Failed api calls comparison in last week',
+                    align: 'left'
+                },
+                xAxis: {
+                    categories: ['Successful', 'Failed']
+                },
+                yAxis: {
+                    title: {
+                        text: 'API calls'
+                    }
+                },
+                tooltip: {
+                    valueSuffix: ' API calles'
+                },
+                plotOptions: {
+                    series: {
+                        borderRadius: '25%'
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    type: 'column',
+                    name: 'SUN',
+                    data: [59, 83]
+                }, {
+                    type: 'column',
+                    name: 'MON',
+                    data: [79, 72]
+                }, {
+                    type: 'column',
+                    name: 'TUE',
+                    data: [58, 88]
+                }, {
+                    type: 'column',
+                    name: 'WED',
+                    data: [20, 76]
+                }, {
+                    type: 'column',
+                    name: 'THUR',
+                    data: [88, 75]
+                }, {
+                    type: 'column',
+                    name: 'FRI',
+                    data: [50, 76]
+                }, {
+                    type: 'column',
+                    name: 'SAT',
+                    data: [75, 50]
+                }, {
+                    type: 'spline',
+                    name: 'Average',
+                    data: [83.33, 70.66],
+                    marker: {
+                        lineWidth: 2,
+                        lineColor: Highcharts.getOptions().colors[3],
+                        fillColor: 'white'
+                    }
+                }, {
+                    type: 'pie',
+                    name: 'Total',
+                    data: [{
+                        name: 'SUN',
+                        y: 700,
+                        color: Highcharts.getOptions().colors[0], // 2020 color
+                        dataLabels: {
+                            enabled: true,
+                            distance: -50,
+                            format: '{point.total} API Calls',
+                            style: {
+                                fontSize: '12px'
+                            }
+                        }
+                    }, {
+                        name: 'MON',
+                        y: 586,
+                        color: Highcharts.getOptions().colors[1] // 2021 color
+                    }, {
+                        name: 'TUE',
+                        y: 647,
+                        color: Highcharts.getOptions().colors[2] // 2022 color
+                    }, {
+                        name: 'WED',
+                        y: 586,
+                        color: Highcharts.getOptions().colors[1] // 2021 color
+                    }, {
+                        name: 'THUR',
+                        y: 647,
+                        color: Highcharts.getOptions().colors[2] // 2022 color
+                    }, {
+                        name: 'FRI',
+                        y: 586,
+                        color: Highcharts.getOptions().colors[1] // 2021 color
+                    }, {
+                        name: 'SAT',
+                        y: 647,
+                        color: Highcharts.getOptions().colors[2] // 2022 color
+                    }],
+                    center: [15, 30],
+                    size: 100,
+                    innerSize: '90%',
+                    showInLegend: false,
+                    dataLabels: {
+                        enabled: false
+                    }
+                }]
+            });
+
+            $('.BotChanger').on('click', function () {
+                let activated = $(this)[0].checked;
+                if (activated) {
+                    $('.responseSelectorMsg').html('Getting response from ChatGPT API');
+                    $('.chatGPTBot').attr('style', 'display: block');
+                    $('.dialogFlowBot').attr('style', 'display: none');
+                } else {
+                    $('.responseSelectorMsg').html('Getting response from DialogFlow API');
+                    $('.dialogFlowBot').attr('style', 'display: block');
+                    $('.chatGPTBot').attr('style', 'display: none');
+                }
+            })
+        })
+    </script>
+
+</body>
+
+</html>
