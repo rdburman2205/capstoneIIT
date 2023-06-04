@@ -225,14 +225,6 @@
 
 <body>
     <div class="botParent">
-        <!-- <div class="dialogFlowBot">
-      <h1 class="heading">Chatbot using DialogFlow</h1>
-      <small>Powered by DialogFlow</small>
-      <iframe allow="microphone;" width="350" class="chatbox"
-        src="https://console.dialogflow.com/api-client/demo/embedded/c5008b18-36be-47c0-9a8b-1840c8fa7a03">
-      </iframe>
-    </div> -->
-
         <div style="display: flex; justify-content: space-between">
             <div class="chatGPTBot">
                 <!-- <h1 class="heading">Custom Bot with GPT 3 Engine (Davinci Model)</h1>
@@ -242,17 +234,12 @@
                 <button id="send">Send</button>
             </div>
             <div class="container">
-                <!-- <div class="changerMessage">Enable switch to get NLP based generic response from ChatGPT</div>
-                <label class="switch"><input type="checkbox" class="BotChanger" />
-                    <div></div>
-                </label>
-                <span class="responseSelectorMsg">Getting response from DialogFlow API</span> -->
                 <figure class="highcharts-figure">
                     <div id="avg_time"></div>
                     <div id="sf_compare"></div>
                 </figure>
                 <figure class="highcharts-figure">
-                    <div id="container"></div>
+                    <!-- <div id="container"></div> -->
                     <div id="account_type_intents"></div>
                     <div id="account_opening_mode"></div>
                     <div id="account_method"></div>
@@ -260,28 +247,15 @@
             </div>
         </div>
     </div>
-    <!-- <style>
-        df-messenger {
-            --df-messenger-bot-message: #FFFFFF;
-            --df-messenger-button-titlebar-color: #df9b56;
-            --df-messenger-chat-background-color: #ede6ff;
-            --df-messenger-font-color: black;
-            --df-messenger-send-icon: #878fac;
-            --df-messenger-user-message: #c0a9fd;
-            --df-messenger-button-titlebar-color: #6750a4;
-            --df-messenger-button-titlebar-font-size: 15px;
-        }
-    </style>
-
-    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-    <df-messenger intent="WELCOME" chat-title="BankLiaison Bot" agent-id="c5008b18-36be-47c0-9a8b-1840c8fa7a03"
-        language-code="en"></df-messenger> -->
     <script>
         $(function () {
             let avg_time_category = [];
             let avg_time_data = [];
             let avg_user_time = [];
+            let pie_data = [];
             let startTime = new Date();
+            let online_offline_categories = [];
+            let online_offline_data = [0,0];
             const DIALOG_FLOW_API = "https://dialogflow.cloud.google.com/v1/integrations/messenger/webhook/c5008b18-36be-47c0-9a8b-1840c8fa7a03/sessions/dfMessenger-94910654";
 
             function sanitizeResponse(response) {
@@ -295,15 +269,23 @@
                     });
             }
 
+            function generateChips(data) {
+                let chips = []
+                data.queryResult?.fulfillmentMessages[1]?.payload?.richContent[0][0]?.options.map(element => {
+                    chips.push(element.text);
+                });
+                return chips;
+            }
+
             function generateResponse(message) {
+                let requestString = message;
                 // Usage example
                 fetch(DIALOG_FLOW_API, {
                     method: 'POST',
-                    body: JSON.stringify({ "queryInput": { "text": { "text": message, "languageCode": "en" } } }),
+                    body: JSON.stringify({ "queryInput": { "text": { "text": requestString, "languageCode": "en" } } }),
                 })
                     .then(sanitizeResponse) // Call the sanitizeResponse function before calling response.json()
                     .then(data => {
-                        
                         let endTime = new Date().getTime() / 1000;
                         let responseTime = endTime - (startTime.getTime() / 1000);
 
@@ -312,12 +294,86 @@
                         const jsonData = JSON.parse(data);
 
                         // Handle the sanitized JSON response
-                        console.log(seconds);
-                        addMessage(jsonData.queryResult.fulfillmentText, 'bot');
+                        let chipsData = generateChips(jsonData);
+                        const chatbox = document.getElementById("chatbox");
+                        const message = document.createElement("div");
+                        message.className = "message";
+                        message.classList.add('bot');
+                        message.innerText = jsonData.queryResult.fulfillmentText
+                        message.innerText += (chipsData[0] ? chipsData[0] : "") + " " + (chipsData[1] ? chipsData[1] : "") + " " + (chipsData[2] ? chipsData[2] : "");
+                        chatbox.appendChild(message);
+
+                        if (requestString.toLowerCase() === 'women') {
+                            let indexExisting = pie_data.findIndex(elem => elem.name === "women");
+                            if (indexExisting <= -1) {
+                                pie_data.push({
+                                    name: 'women',
+                                    y: 1
+                                });
+                            } else {
+                                pie_data[indexExisting] = {
+                                    name: 'women',
+                                    y: pie_data[indexExisting].y + 1
+                                };
+                            }
+
+                        }
+
+                        if (requestString.toLowerCase() === 'senior citizen') {
+                            let indexExisting = pie_data.findIndex(elem => elem.name === "senior citizen");
+                            if (indexExisting <= -1) {
+                                pie_data.push({
+                                    name: 'senior citizen',
+                                    y: 1
+                                });
+                            } else {
+                                pie_data[indexExisting] = {
+                                    name: 'senior citizenmen',
+                                    y: pie_data[indexExisting].y + 1
+                                };
+                            }
+                        }
+
+                        if (requestString.toLowerCase() === 'regular') {
+                            let indexExisting = pie_data.findIndex(elem => elem.name === "regular");
+                            if (indexExisting <= -1) {
+                                pie_data.push({
+                                    name: 'regular',
+                                    y: 1
+                                });
+                            } else {
+                                pie_data[indexExisting] = {
+                                    name: 'regular',
+                                    y: pie_data[indexExisting].y + 1
+                                };
+                            }
+                        }
+
+                        if(requestString.toLowerCase() === 'online') {
+                            let indexExisting = online_offline_categories.findIndex(elem => elem === "online");
+                            if (indexExisting <= -1) {
+                                online_offline_categories.push('online');
+                                online_offline_data[0] = 1;
+                            } else {
+                                online_offline_data[0] = online_offline_data[0] + 1
+                            }
+                        }
+
+                        if(requestString.toLowerCase() === 'offline') {
+                            let indexExisting = online_offline_categories.findIndex(elem => elem === "offline");
+                            if (indexExisting <= -1) {
+                                online_offline_categories.push('offline');
+                                online_offline_data[1] = 1;
+                            } else {
+                                online_offline_data[1] = online_offline_data[1] + 1
+                            }
+                        }
+                        console.log(online_offline_categories);
+                        console.log(online_offline_data);
                         avg_time_category.push(startTime.getMinutes() + ":" + startTime.getSeconds());
                         avg_time_data.push(seconds);
-                        avg_user_time.push(generateUniqueFloats(0,1,1));
-                        updateChartData(avg_time_category, avg_time_data, avg_user_time);
+                        avg_user_time.push(generateUniqueFloats(0, 1, 1));
+                        updateChartData(avg_time_category, avg_time_data, avg_user_time, pie_data);
                         startTime = new Date();
                     })
                     .catch(error => {
@@ -343,7 +399,6 @@
                 input.value = "";
                 const response = generateResponse(message);
                 startTime = new Date();
-                // addMessage(response, "bot");
             })
 
             function generateUniqueFloats(min, max, count) {
@@ -398,79 +453,46 @@
                 }]
             });
 
-            function updateChartData(categories, bot_data, user_data) {
-                // Generate new data or fetch data from an API
-
-                // Update the chart series data
-                var chart = avg_time_chart;
-                if (chart) {
-                    console.log(chart)
-                    // chart.series[0].setData(newData);
-                    chart.xAxis[0].update({ categories: categories });
-                    chart.series[0].update({ data: bot_data })
-                    chart.series[1].update({ data: user_data })
-                }
-            }
-
-            // //get current time stamp
-            // setInterval(function () {
-            //     if (avg_time_category.length <= 60) {
-            //         avg_time_category.push(Date.now());
-            //         avg_time_data.push(generateUniqueFloats(0, 2, 1));
-            //     } else {
-            //         avg_time_category.shift();
-            //         avg_time_data.shift();
-            //         avg_time_category.push(Date.now());
-            //         avg_time_data.push(generateUniqueFloats(0, 2, 1));
-            //     }
-            //     // generate_avg_time_chart(avg_time_category, avg_time_data)
-            //     updateChartData(avg_time_category, avg_time_data)
-            // }, 3000);
-
-            Highcharts.chart('container', {
+            var pie_chart = Highcharts.chart('account_method', {
                 chart: {
-                    type: 'column'
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
                 },
                 title: {
-                    text: 'Number of requests handled by the API'
-                },
-                xAxis: {
-                    categories: [
-                        'ChatGPT',
-                        'DialogFlow'
-                    ],
-                    crosshair: true
-                },
-                yAxis: {
-                    min: 0,
-                    title: {
-                        text: 'APIs call'
-                    }
+                    text: 'Most used intents based on account type',
+                    align: 'left'
                 },
                 tooltip: {
-                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        '<td style="padding:0"><b>{point.y:.1f} APIs call</b></td></tr>',
-                    footerFormat: '</table>',
-                    shared: true,
-                    useHTML: true
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
+                    }
                 },
                 plotOptions: {
-                    column: {
-                        pointPadding: 0.2,
-                        borderWidth: 0
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                        }
                     }
                 },
                 credits: {
                     enabled: false
                 },
                 series: [{
-                    name: 'ChatGPT',
-                    data: [49, 71]
+                    name: 'Brands',
+                    colorByPoint: true,
+                    data: pie_data
                 }]
             });
 
-            Highcharts.chart('account_opening_mode', {
+            var online_offline = Highcharts.chart('account_opening_mode', {
                 chart: {
                     type: 'column'
                 },
@@ -478,10 +500,7 @@
                     text: 'Most frequent intents used based on account type'
                 },
                 xAxis: {
-                    categories: [
-                        'Online',
-                        'Offline'
-                    ],
+                    categories: online_offline_categories,
                     crosshair: true
                 },
                 yAxis: {
@@ -509,9 +528,80 @@
                 },
                 series: [{
                     name: 'Opening Mode',
-                    data: [63, 20]
+                    data: online_offline_data
                 }]
             });
+
+            function updateChartData(categories, bot_data, user_data, pie_data) {
+                // Generate new data or fetch data from an API
+
+                // Update the chart series data
+                var chart = avg_time_chart;
+                var pchart = pie_chart;
+                var online_offline_chart = online_offline;
+                if (chart) {
+                    // chart.series[0].setData(newData);
+                    chart.xAxis[0].update({ categories: categories });
+                    chart.series[0].update({ data: bot_data })
+                    chart.series[1].update({ data: user_data })
+                }
+
+                if (pchart) {
+                    pchart.series[0].update({ data: pie_data })
+                }
+
+                if(online_offline) {
+                    online_offline.xAxis[0].update({categories: online_offline_categories});
+                    online_offline.series[0].update({
+                        data: online_offline_data
+                    })
+                }
+
+
+            }
+
+            // Highcharts.chart('container', {
+            //     chart: {
+            //         type: 'column'
+            //     },
+            //     title: {
+            //         text: 'Number of requests handled by the API'
+            //     },
+            //     xAxis: {
+            //         categories: [
+            //             'ChatGPT',
+            //             'DialogFlow'
+            //         ],
+            //         crosshair: true
+            //     },
+            //     yAxis: {
+            //         min: 0,
+            //         title: {
+            //             text: 'APIs call'
+            //         }
+            //     },
+            //     tooltip: {
+            //         headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            //         pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            //             '<td style="padding:0"><b>{point.y:.1f} APIs call</b></td></tr>',
+            //         footerFormat: '</table>',
+            //         shared: true,
+            //         useHTML: true
+            //     },
+            //     plotOptions: {
+            //         column: {
+            //             pointPadding: 0.2,
+            //             borderWidth: 0
+            //         }
+            //     },
+            //     credits: {
+            //         enabled: false
+            //     },
+            //     series: [{
+            //         name: 'ChatGPT',
+            //         data: [49, 71]
+            //     }]
+            // });
 
             Highcharts.chart('account_type_intents', {
                 chart: {
@@ -558,56 +648,6 @@
                 series: [{
                     name: 'Account Type',
                     data: [23, 12]
-                }]
-            });
-
-            Highcharts.chart('account_method', {
-                chart: {
-                    plotBackgroundColor: null,
-                    plotBorderWidth: null,
-                    plotShadow: false,
-                    type: 'pie'
-                },
-                title: {
-                    text: 'Most used intents based on account type',
-                    align: 'left'
-                },
-                tooltip: {
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                },
-                accessibility: {
-                    point: {
-                        valueSuffix: '%'
-                    }
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: true,
-                        cursor: 'pointer',
-                        dataLabels: {
-                            enabled: true,
-                            format: '<b>{point.name}</b>: {point.percentage:.1f} %'
-                        }
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                series: [{
-                    name: 'Brands',
-                    colorByPoint: true,
-                    data: [{
-                        name: 'Women  Account',
-                        y: 37.9,
-                        sliced: false,
-                        selected: false
-                    }, {
-                        name: 'Regular',
-                        y: 43.3
-                    }, {
-                        name: 'Senior Citizen',
-                        y: 19.7
-                    }]
                 }]
             });
 
@@ -733,10 +773,9 @@
                     $('.dialogFlowBot').attr('style', 'display: block');
                     $('.chatGPTBot').attr('style', 'display: none');
                 }
-            })
+            });
         })
     </script>
-
 </body>
 
 </html>
