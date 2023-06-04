@@ -164,7 +164,8 @@
         #container,
         #account_type_intents,
         #account_opening_mode,
-        #account_method {            width: 380px;
+        #account_method {
+            width: 380px;
             margin-top: 10px;
             margin-left: 0;
             height: 380px;
@@ -218,6 +219,19 @@
 
         .highcharts-data-table tr:hover {
             background: #f1f7ff;
+        }
+        .chips-container {
+            display: flex;
+            justify-content: first baseline;
+            column-gap: 15px;
+        }
+
+        .chip {
+            margin-top: 10px;
+            background-color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -369,14 +383,53 @@
                         const jsonData = JSON.parse(data);
 
                         // Handle the sanitized JSON response
-                        let chipsData = generateChips(jsonData);
+
+                        // let chipsData = generateChips(jsonData);
+                        // const chatbox = document.getElementById("chatbox");
+                        // const message = document.createElement("div");
+                        // message.className = "message";
+                        // message.classList.add('bot');
+                        // message.innerText = jsonData.queryResult.fulfillmentText
+                        // message.innerText += (chipsData[0] ? chipsData[0] : "") + " " + (chipsData[1] ? chipsData[1] : "") + " " + (chipsData[2] ? chipsData[2] : "");
+                        // chatbox.appendChild(message);
+
+                        const chipsData = generateChips(jsonData);
                         const chatbox = document.getElementById("chatbox");
                         const message = document.createElement("div");
                         message.className = "message";
                         message.classList.add('bot');
-                        message.innerText = jsonData.queryResult.fulfillmentText
-                        message.innerText += (chipsData[0] ? chipsData[0] : "") + " " + (chipsData[1] ? chipsData[1] : "") + " " + (chipsData[2] ? chipsData[2] : "");
+                        message.innerText = jsonData.queryResult.fulfillmentText;
+
                         chatbox.appendChild(message);
+
+                        // Create separate div elements for chipsData[0] and chipsData[1]
+                        if (chipsData[0] || chipsData[1] || chipsData[2]) {
+                            const chipsContainer = document.createElement("div");
+                            chipsContainer.className = "chips-container";
+
+                            if (chipsData[0]) {
+                                const chip1 = document.createElement("div");
+                                chip1.className = "chip";
+                                chip1.innerText = chipsData[0];
+                                chipsContainer.appendChild(chip1);
+                            }
+
+                            if (chipsData[1]) {
+                                const chip2 = document.createElement("div");
+                                chip2.className = "chip";
+                                chip2.innerText = chipsData[1];
+                                chipsContainer.appendChild(chip2);
+                            }
+
+                            if (chipsData[2]) {
+                                const chip3 = document.createElement("div");
+                                chip3.className = "chip";
+                                chip3.innerText = chipsData[2];
+                                chipsContainer.appendChild(chip3);
+                            }
+
+                            message.appendChild(chipsContainer);
+                        }
 
                         if (requestString.toLowerCase() === 'women') {
                             let indexExisting = pie_data.findIndex(elem => elem.name === "women");
