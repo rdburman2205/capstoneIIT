@@ -164,11 +164,10 @@
         #container,
         #account_type_intents,
         #account_opening_mode,
-        #account_method {
-            width: 280px;
+        #account_method {            width: 380px;
             margin-top: 10px;
             margin-left: 0;
-            height: 250px;
+            height: 380px;
             border: 1px solid silver;
             padding-top: 20px;
             border-radius: 10px;
@@ -254,11 +253,12 @@
             let avg_user_time = [];
             let pie_data = [];
             let startTime = new Date();
-            let online_offline_categories = ['online','offline'];
-            let online_offline_data = [0,0];
-            let savings_current_categories = ['savings','current'];
-            let savings_current_data = [0,0];
-           
+            let online_offline_categories = ['online', 'offline'];
+            let online_offline_data = [0, 0];
+            let savings_current_categories = ['savings', 'current'];
+            let savings_current_data = [0, 0];
+            let sf_categories_categories = ['successful', 'failed'];
+            let sf_data = [];
             const DIALOG_FLOW_API = "https://dialogflow.cloud.google.com/v1/integrations/messenger/webhook/c5008b18-36be-47c0-9a8b-1840c8fa7a03/sessions/dfMessenger-94910654";
 
             function sanitizeResponse(response) {
@@ -279,6 +279,78 @@
                 });
                 return chips;
             }
+
+            // Create an array to store the day names
+            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+            // Get the current date
+            const currentDate = new Date();
+
+            // Create an array to store the day names of the last 7 days
+            const last7Days = [];
+
+            // Loop to get the day names of the last 7 days
+            for (let i = 0; i < 7; i++) {
+                const previousDate = new Date(currentDate);
+                previousDate.setDate(currentDate.getDate() - i);
+                const dayName = dayNames[previousDate.getDay()];
+                last7Days.push(dayName);
+            }
+
+            console.log(last7Days);
+            console.log(currentDate);
+            let sf_pie_data = [];
+            last7Days.reverse().map((element, index) => {
+                let random_data = Math.floor(Math.random() * 16);
+
+                sf_data.push({
+                    type: 'column',
+                    name: element,
+                    data: [index + 1 === last7Days.length ? avg_time_data.length : random_data, 0]
+                })
+                sf_pie_data.push(
+                    {
+                        name: element,
+                        y: index + 1 === last7Days.length ? avg_time_data.length : random_data,
+                        color: Highcharts.getOptions().colors[index] // 2021 color
+                    }
+                )
+            });
+
+            sf_data.push({
+                type: 'spline',
+                name: 'Average',
+                data: [3, 0],
+                marker: {
+                    lineWidth: 2,
+                    lineColor: Highcharts.getOptions().colors[3],
+                    fillColor: 'white'
+                }
+            }, {
+                type: 'pie',
+                name: 'Total',
+                data: sf_pie_data,
+                center: [15, 30],
+                size: 100,
+                innerSize: '90%',
+                showInLegend: false,
+                dataLabels: {
+                    enabled: false
+                }
+            });
+            sf_pie_data.push({
+                name: '',
+                y: 8,
+                color: Highcharts.getOptions().colors[0], // 2020 color
+                dataLabels: {
+                    enabled: true,
+                    distance: -50,
+                    format: (8) + ' API Calls',
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            })
 
             function generateResponse(message) {
                 let requestString = message;
@@ -352,7 +424,7 @@
                             }
                         }
 
-                        if(requestString.toLowerCase() === 'online') {
+                        if (requestString.toLowerCase() === 'online') {
                             let indexExisting = online_offline_categories.findIndex(elem => elem === "online");
                             if (indexExisting <= -1) {
                                 online_offline_categories.push('online');
@@ -362,7 +434,7 @@
                             }
                         }
 
-                        if(requestString.toLowerCase() === 'offline') {
+                        if (requestString.toLowerCase() === 'offline') {
                             let indexExisting = online_offline_categories.findIndex(elem => elem === "offline");
                             if (indexExisting <= -1) {
                                 online_offline_categories.push('offline');
@@ -371,7 +443,7 @@
                                 online_offline_data[1] = online_offline_data[1] + 1
                             }
                         }
-                        if(requestString.toLowerCase() === 'savings') {
+                        if (requestString.toLowerCase() === 'savings') {
                             let indexExisting = savings_current_categories.findIndex(elem => elem === "savings");
                             if (indexExisting <= -1) {
                                 savings_current_categories.push('savings');
@@ -380,7 +452,7 @@
                                 savings_current_data[0] = savings_current_data[0] + 1
                             }
                         }
-                        if(requestString.toLowerCase() === 'current') {
+                        if (requestString.toLowerCase() === 'current') {
                             let indexExisting = savings_current_categories.findIndex(elem => elem === "current");
                             if (indexExisting <= -1) {
                                 savings_current_categories.push('current');
@@ -482,7 +554,7 @@
                     type: 'pie'
                 },
                 title: {
-                    text: 'Most used intents based on account type',
+                    text: 'Most used intents based on account sub-categories',
                     align: 'left'
                 },
                 tooltip: {
@@ -509,7 +581,12 @@
                 series: [{
                     name: 'Brands',
                     colorByPoint: true,
-                    data: pie_data
+                    data: pie_data,
+                    dataLabels: {
+                        style: {
+                            fontSize: 14
+                        }
+                    },
                 }]
             });
 
@@ -518,11 +595,15 @@
                     type: 'column'
                 },
                 title: {
-                    text: 'Most frequent intents used based on account type'
+                    text: 'Most frequent intents used based on opening mode'
                 },
                 xAxis: {
                     categories: online_offline_categories,
-                    crosshair: true
+                    crosshair: true, labels: {
+                        style: {
+                            fontSize: 20
+                        }
+                    }
                 },
                 yAxis: {
                     min: 0,
@@ -549,11 +630,15 @@
                 },
                 series: [{
                     name: 'Opening Mode',
-                    data: online_offline_data
+                    data: online_offline_data, dataLabels: {
+                        style: {
+                            fontSize: 20
+                        }
+                    }
                 }]
             });
 
-            var savings_current=Highcharts.chart('account_type_intents', {
+            var savings_current = Highcharts.chart('account_type_intents', {
                 chart: {
                     type: 'bar'
                 },
@@ -563,6 +648,11 @@
                 },
                 xAxis: {
                     categories: savings_current_categories,
+                    labels: {
+                        style: {
+                            fontSize: 20
+                        }
+                    },
                     title: {
                         text: null
                     },
@@ -597,9 +687,42 @@
                 },
                 series: [{
                     name: 'Account Type',
-                    data: savings_current_data
+                    data: savings_current_data,
+                    dataLabels: {
+                        style: {
+                            fontSize: 20
+                        }
+                    },
                 }]
             });
+
+            var sf_chart = Highcharts.chart('sf_compare', {
+                title: {
+                    text: 'Successful and Failed api calls comparison in last week',
+                    align: 'left'
+                },
+                xAxis: {
+                    categories: sf_categories_categories
+                },
+                yAxis: {
+                    title: {
+                        text: 'API calls'
+                    }
+                },
+                tooltip: {
+                    valueSuffix: ' API calles'
+                },
+                plotOptions: {
+                    series: {
+                        borderRadius: '25%'
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: sf_data
+            });
+
             function updateChartData(categories, bot_data, user_data, pie_data) {
                 // Generate new data or fetch data from an API
 
@@ -617,17 +740,20 @@
                     pchart.series[0].update({ data: pie_data })
                 }
 
-                if(online_offline) {
-                    online_offline.xAxis[0].update({categories: online_offline_categories});
+                if (online_offline) {
+                    online_offline.xAxis[0].update({ categories: online_offline_categories });
                     online_offline.series[0].update({
                         data: online_offline_data
                     })
                 }
-                if(savings_current){
-                    savings_current.xAxis[0].update({categories: savings_current_categories});
+                if (savings_current) {
+                    savings_current.xAxis[0].update({ categories: savings_current_categories });
                     savings_current.series[0].update({
                         data: savings_current_data
                     })
+                }
+                if (sf_chart) {
+                    sf_chart.series
                 }
 
 
@@ -676,116 +802,6 @@
             //     }]
             // });
 
-            Highcharts.chart('sf_compare', {
-                title: {
-                    text: 'Successful and Failed api calls comparison in last week',
-                    align: 'left'
-                },
-                xAxis: {
-                    categories: ['Successful', 'Failed']
-                },
-                yAxis: {
-                    title: {
-                        text: 'API calls'
-                    }
-                },
-                tooltip: {
-                    valueSuffix: ' API calles'
-                },
-                plotOptions: {
-                    series: {
-                        borderRadius: '25%'
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                series: [{
-                    type: 'column',
-                    name: 'SUN',
-                    data: [59, 83]
-                }, {
-                    type: 'column',
-                    name: 'MON',
-                    data: [79, 72]
-                }, {
-                    type: 'column',
-                    name: 'TUE',
-                    data: [58, 88]
-                }, {
-                    type: 'column',
-                    name: 'WED',
-                    data: [20, 76]
-                }, {
-                    type: 'column',
-                    name: 'THUR',
-                    data: [88, 75]
-                }, {
-                    type: 'column',
-                    name: 'FRI',
-                    data: [50, 76]
-                }, {
-                    type: 'column',
-                    name: 'SAT',
-                    data: [75, 50]
-                }, {
-                    type: 'spline',
-                    name: 'Average',
-                    data: [83.33, 70.66],
-                    marker: {
-                        lineWidth: 2,
-                        lineColor: Highcharts.getOptions().colors[3],
-                        fillColor: 'white'
-                    }
-                }, {
-                    type: 'pie',
-                    name: 'Total',
-                    data: [{
-                        name: 'SUN',
-                        y: 700,
-                        color: Highcharts.getOptions().colors[0], // 2020 color
-                        dataLabels: {
-                            enabled: true,
-                            distance: -50,
-                            format: '{point.total} API Calls',
-                            style: {
-                                fontSize: '12px'
-                            }
-                        }
-                    }, {
-                        name: 'MON',
-                        y: 586,
-                        color: Highcharts.getOptions().colors[1] // 2021 color
-                    }, {
-                        name: 'TUE',
-                        y: 647,
-                        color: Highcharts.getOptions().colors[2] // 2022 color
-                    }, {
-                        name: 'WED',
-                        y: 586,
-                        color: Highcharts.getOptions().colors[1] // 2021 color
-                    }, {
-                        name: 'THUR',
-                        y: 647,
-                        color: Highcharts.getOptions().colors[2] // 2022 color
-                    }, {
-                        name: 'FRI',
-                        y: 586,
-                        color: Highcharts.getOptions().colors[1] // 2021 color
-                    }, {
-                        name: 'SAT',
-                        y: 647,
-                        color: Highcharts.getOptions().colors[2] // 2022 color
-                    }],
-                    center: [15, 30],
-                    size: 100,
-                    innerSize: '90%',
-                    showInLegend: false,
-                    dataLabels: {
-                        enabled: false
-                    }
-                }]
-            });
 
             $('.BotChanger').on('click', function () {
                 let activated = $(this)[0].checked;
