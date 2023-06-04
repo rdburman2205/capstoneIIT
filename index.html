@@ -321,12 +321,12 @@
                 sf_data.push({
                     type: 'column',
                     name: element,
-                    data: [index + 1 === last7Days.length ? avg_time_data.length : random_data, 0]
+                    data: [ random_data, 0]
                 })
                 sf_pie_data.push(
                     {
                         name: element,
-                        y: index + 1 === last7Days.length ? avg_time_data.length : random_data,
+                        y:  random_data,
                         color: Highcharts.getOptions().colors[index] // 2021 color
                     }
                 )
@@ -355,12 +355,12 @@
             });
             sf_pie_data.push({
                 name: '',
-                y: 8,
+                y: Math.floor(Math.random() * 16),
                 color: Highcharts.getOptions().colors[0], // 2020 color
                 dataLabels: {
                     enabled: true,
                     distance: -50,
-                    format: (8) + ' API Calls',
+                    format: (Math.floor(Math.random() * 16)) + ' API Calls',
                     style: {
                         fontSize: '12px'
                     }
@@ -411,14 +411,69 @@
                         // message.innerText += (chipsData[0] ? chipsData[0] : "") + " " + (chipsData[1] ? chipsData[1] : "") + " " + (chipsData[2] ? chipsData[2] : "");
                         // chatbox.appendChild(message);
 
+                        // const chipsData = generateChips(jsonData);
+                        // const chatbox = document.getElementById("chatbox");
+                        // const message = document.createElement("div");
+                        // message.className = "message";
+                        // message.classList.add('bot');
+                        // message.innerText = jsonData.queryResult.fulfillmentText;
+
+                        // chatbox.appendChild(message);
+
                         const chipsData = generateChips(jsonData);
                         const chatbox = document.getElementById("chatbox");
                         const message = document.createElement("div");
                         message.className = "message";
                         message.classList.add('bot');
-                        message.innerText = jsonData.queryResult.fulfillmentText;
 
+                        const fulfillmentText = jsonData.queryResult.fulfillmentText ? jsonData.queryResult.fulfillmentText : jsonData.queryResult.fulfillmentMessages[0].text.text[0];
+
+                        if (fulfillmentText === "Please fill the form online and submit.") {
+                            // Set the text content of the message div
+                            message.innerText = fulfillmentText;
+
+                            // Create a line break element
+                            const lineBreak = document.createElement("br");
+
+                            // Create the link element
+                            const linkElement = document.createElement("a");
+                            linkElement.href = "https://campaigns.icicibank.com/current-account/index.html?source=Google-ads&utm_source=sem&utm_medium=search&utm_campaign=icicibank-a3-current-account-brand-exact-dec22&utm_content=sem-search-icicibank-a3-current-account-brand-exact-dec22-performance-na-cpc-General-na-icici-current-account-opening-form&utm_term=icici-current-account-opening-form&utm_lms=sem-search-icicibank-a3-current-account-brand-exact-dec22-performance-na-cpc-General-na-icici-current-account-opening-form&gad=1&gclid=Cj0KCQjw7PCjBhDwARIsANo7CgmE1V5DAIpGSRuAYsaHfrhZRep3JQen2x94qYDRKjA8bpQ8Khn99XwaAo8EEALw_wcB";
+                            linkElement.textContent = "Online form";
+                            linkElement.target = "_blank";
+
+                            // Append the line break and link element to the message div
+                            message.appendChild(lineBreak);
+                            message.appendChild(linkElement);
+                        } else {
+                            // Set the text content of the message div
+                            message.innerText = fulfillmentText;
+                        }
+
+                        // Append the message div to the chatbox div
                         chatbox.appendChild(message);
+
+
+                        if (message === "Please fill the form online and submit.") {
+                            const chatbox = document.getElementById("chatbox");
+                            const message = document.createElement("div");
+                            message.className = "message";
+                            message.classList.add('bot');
+
+                            // Create the link element
+                            const linkElement = document.createElement("a");
+                            linkElement.href = "https://example.com";
+                            linkElement.textContent = "Example Link";
+
+                            // Append the link element to the message div
+                            message.appendChild(linkElement);
+
+                            // Set the text content of the message div
+                            message.innerText = text;
+
+                            // Append the message div to the chatbox div
+                            chatbox.appendChild(message);
+                        }
+
 
                         // Create separate div elements for chipsData[0] and chipsData[1]
                         if (chipsData[0] || chipsData[1] || chipsData[2]) {
