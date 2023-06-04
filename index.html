@@ -368,10 +368,10 @@
             })
 
             function handleChipClick() {
-                const text = this.getAttribute("data-text");
+                var text = this.getAttribute("data-text");
                 console.log("Clicked chip:", text);
                 var input = document.getElementById("message");
-                input.value = text;
+                input.value = text.includes('Online')?"online":text;
                 const message = input.value;
                 addMessage(message, "user");
                 input.value = "";
