@@ -254,8 +254,11 @@
             let avg_user_time = [];
             let pie_data = [];
             let startTime = new Date();
-            let online_offline_categories = [];
+            let online_offline_categories = ['online','offline'];
             let online_offline_data = [0,0];
+            let savings_current_categories = ['savings','current'];
+            let savings_current_data = [0,0];
+           
             const DIALOG_FLOW_API = "https://dialogflow.cloud.google.com/v1/integrations/messenger/webhook/c5008b18-36be-47c0-9a8b-1840c8fa7a03/sessions/dfMessenger-94910654";
 
             function sanitizeResponse(response) {
@@ -366,6 +369,24 @@
                                 online_offline_data[1] = 1;
                             } else {
                                 online_offline_data[1] = online_offline_data[1] + 1
+                            }
+                        }
+                        if(requestString.toLowerCase() === 'savings') {
+                            let indexExisting = savings_current_categories.findIndex(elem => elem === "savings");
+                            if (indexExisting <= -1) {
+                                savings_current_categories.push('savings');
+                                savings_current_data[0] = 1;
+                            } else {
+                                savings_current_data[0] = savings_current_data[0] + 1
+                            }
+                        }
+                        if(requestString.toLowerCase() === 'current') {
+                            let indexExisting = savings_current_categories.findIndex(elem => elem === "current");
+                            if (indexExisting <= -1) {
+                                savings_current_categories.push('current');
+                                savings_current_data[1] = 1;
+                            } else {
+                                savings_current_data[1] = savings_current_data[1] + 1
                             }
                         }
                         console.log(online_offline_categories);
@@ -532,13 +553,59 @@
                 }]
             });
 
+            var savings_current=Highcharts.chart('account_type_intents', {
+                chart: {
+                    type: 'bar'
+                },
+                title: {
+                    text: 'Most frequent intents used based on account type',
+                    align: 'left'
+                },
+                xAxis: {
+                    categories: savings_current_categories,
+                    title: {
+                        text: null
+                    },
+                    gridLineWidth: 1,
+                    lineWidth: 0
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: ' Times',
+                        align: 'high'
+                    },
+                    labels: {
+                        overflow: 'justify'
+                    },
+                    gridLineWidth: 0
+                },
+                tooltip: {
+                    valueSuffix: ' Times'
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: '50%',
+                        dataLabels: {
+                            enabled: true
+                        },
+                        groupPadding: 0.1
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Account Type',
+                    data: savings_current_data
+                }]
+            });
             function updateChartData(categories, bot_data, user_data, pie_data) {
                 // Generate new data or fetch data from an API
 
                 // Update the chart series data
                 var chart = avg_time_chart;
                 var pchart = pie_chart;
-                var online_offline_chart = online_offline;
                 if (chart) {
                     // chart.series[0].setData(newData);
                     chart.xAxis[0].update({ categories: categories });
@@ -554,6 +621,12 @@
                     online_offline.xAxis[0].update({categories: online_offline_categories});
                     online_offline.series[0].update({
                         data: online_offline_data
+                    })
+                }
+                if(savings_current){
+                    savings_current.xAxis[0].update({categories: savings_current_categories});
+                    savings_current.series[0].update({
+                        data: savings_current_data
                     })
                 }
 
@@ -602,54 +675,6 @@
             //         data: [49, 71]
             //     }]
             // });
-
-            Highcharts.chart('account_type_intents', {
-                chart: {
-                    type: 'bar'
-                },
-                title: {
-                    text: 'Most frequent intents used based on account type',
-                    align: 'left'
-                },
-                xAxis: {
-                    categories: ['Savings', 'Current'],
-                    title: {
-                        text: null
-                    },
-                    gridLineWidth: 1,
-                    lineWidth: 0
-                },
-                yAxis: {
-                    min: 0,
-                    title: {
-                        text: ' Times',
-                        align: 'high'
-                    },
-                    labels: {
-                        overflow: 'justify'
-                    },
-                    gridLineWidth: 0
-                },
-                tooltip: {
-                    valueSuffix: ' Times'
-                },
-                plotOptions: {
-                    bar: {
-                        borderRadius: '50%',
-                        dataLabels: {
-                            enabled: true
-                        },
-                        groupPadding: 0.1
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                series: [{
-                    name: 'Account Type',
-                    data: [23, 12]
-                }]
-            });
 
             Highcharts.chart('sf_compare', {
                 title: {
